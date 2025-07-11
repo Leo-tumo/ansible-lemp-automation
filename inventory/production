@@ -1,0 +1,21 @@
+[webservers]
+web1 ansible_host=10.0.1.10 ansible_user=ubuntu
+web2 ansible_host=10.0.1.11 ansible_user=ubuntu
+
+[dbservers]
+db1 ansible_host=10.0.1.20 ansible_user=ubuntu
+
+[loadbalancers]
+lb1 ansible_host=10.0.1.5 ansible_user=ubuntu
+
+[monitoring]
+monitor1 ansible_host=10.0.1.30 ansible_user=ubuntu
+
+[production:children]
+webservers
+dbservers
+loadbalancers
+monitoring
+
+[production:vars]
+ansible_python_interpreter=/usr/bin/python3

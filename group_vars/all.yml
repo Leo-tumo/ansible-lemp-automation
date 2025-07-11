@@ -1,0 +1,39 @@
+app_name: myapp
+app_version: latest
+app_user: www-data
+app_group: www-data
+app_port: 8080
+app_env: production
+
+domain_name: example.com
+ssl_cert_path: /etc/ssl/certs
+ssl_key_path: /etc/ssl/private
+
+mysql_root_password: "{{ vault_mysql_root_password }}"
+mysql_user: "{{ vault_mysql_user }}"
+mysql_password: "{{ vault_mysql_password }}"
+mysql_database: "{{ app_name }}_{{ app_env }}"
+
+php_version: "8.2"
+php_memory_limit: "256M"
+php_max_execution_time: "300"
+php_upload_max_filesize: "64M"
+
+nginx_worker_processes: auto
+nginx_worker_connections: 1024
+nginx_keepalive_timeout: 65
+
+firewall_allowed_ports:
+  - 22
+  - 80
+  - 443
+  - 3306
+  - 9090
+  - 9100
+
+monitoring_enabled: true
+node_exporter_port: 9100
+prometheus_port: 9090
+
+backup_enabled: true
+backup_retention_days: 7

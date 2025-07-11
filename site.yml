@@ -1,0 +1,49 @@
+- name: Deploy Web Stack
+  hosts: all
+  become: yes
+  gather_facts: yes
+  
+  pre_tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+  roles:
+    - common
+    - firewall
+
+- name: Setup Database Servers
+  hosts: dbservers
+  become: yes
+  roles:
+    - mysql
+
+- name: Setup Web Servers
+  hosts: webservers
+  become: yes
+  roles:
+    - nginx
+    - php
+    - application
+
+- name: Setup Load Balancers
+  hosts: loadbalancers
+  become: yes
+  roles:
+    - nginx
+
+- name: Setup Monitoring
+  hosts: monitoring
+  become: yes
+  roles:
+    - monitoring
+
+- name: Deploy Application
+  hosts: webservers
+  become: yes
+  serial: 1
+  roles:
+    - role: application
+      tags: ['deploy']
