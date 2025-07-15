@@ -1,0 +1,49 @@
+- name: Add PHP repository
+  apt_repository:
+    repo: "ppa:ondrej/php"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install PHP packages
+  package:
+    name:
+      - "php{{ php_version }}-fpm"
+      - "php{{ php_version }}-mysql"
+      - "php{{ php_version }}-curl"
+      - "php{{ php_version }}-gd"
+      - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-xml"
+      - "php{{ php_version }}-zip"
+      - "php{{ php_version }}-json"
+      - "php{{ php_version }}-opcache"
+      - "php{{ php_version }}-redis"
+      - composer
+    state: present
+
+- name: Configure PHP-FPM
+  template:
+    src: php-fpm.conf.j2
+    dest: "/etc/php/{{ php_version }}/fpm/pool.d/{{ app_name }}.conf"
+    backup: yes
+  notify: restart php-fpm
+
+- name: Configure PHP.ini
+  template:
+    src: php.ini.j2
+    dest: "/etc/php/{{ php_version }}/fpm/conf.d/99-{{ app_name }}.ini"
+    backup: yes
+  notify: restart php-fpm
+
+- name: Create PHP session directory
+  file:
+    path: "/var/lib/php/sessions"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Start and enable PHP-FPM
+  service:
+    name: "php{{ php_version }}-fpm"
+    state: started
+    enabled: yes

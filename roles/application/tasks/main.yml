@@ -1,0 +1,73 @@
+- name: Create application directory
+  file:
+    path: "/var/www/{{ app_name }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0755'
+
+- name: Clone application repository
+  git:
+    repo: "{{ app_repository }}"
+    dest: "/var/www/{{ app_name }}"
+    version: "{{ app_version }}"
+    force: yes
+  become_user: "{{ app_user }}"
+  notify: restart php-fpm
+
+- name: Install Composer dependencies
+  composer:
+    command: install
+    working_dir: "/var/www/{{ app_name }}"
+    optimize_autoloader: yes
+    no_dev: yes
+  become_user: "{{ app_user }}"
+  when: app_type == "php"
+
+- name: Create environment file
+  template:
+    src: .env.j2
+    dest: "/var/www/{{ app_name }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0640'
+  notify: restart php-fpm
+
+- name: Set proper permissions
+  file:
+    path: "/var/www/{{ app_name }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    recurse: yes
+
+- name: Create storage directories
+  file:
+    path: "/var/www/{{ app_name }}/{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '0775'
+  loop:
+    - storage
+    - storage/logs
+    - storage/cache
+    - storage/sessions
+    - bootstrap/cache
+  when: app_type == "laravel"
+
+- name: Run database migrations
+  shell: |
+    cd /var/www/{{ app_name }}
+    php artisan migrate --force
+  become_user: "{{ app_user }}"
+  when: app_type == "laravel"
+
+- name: Clear application cache
+  shell: |
+    cd /var/www/{{ app_name }}
+    php artisan cache:clear
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+  become_user: "{{ app_user }}"
+  when: app_type == "laravel"

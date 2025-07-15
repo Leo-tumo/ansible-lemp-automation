@@ -1,0 +1,54 @@
+- name: Install essential packages
+  package:
+    name:
+      - curl
+      - wget
+      - unzip
+      - git
+      - htop
+      - vim
+      - rsync
+      - cron
+      - logrotate
+      - fail2ban
+    state: present
+
+- name: Create application user
+  user:
+    name: "{{ app_user }}"
+    system: yes
+    shell: /bin/bash
+    home: "/var/www"
+    createhome: yes
+
+- name: Set timezone
+  timezone:
+    name: UTC
+
+- name: Configure logrotate
+  template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.d/{{ app_name }}
+    mode: '0644'
+
+- name: Setup daily backups
+  cron:
+    name: "Daily backup"
+    minute: "0"
+    hour: "2"
+    job: "/usr/local/bin/backup.sh"
+    user: root
+  when: backup_enabled
+
+- name: Configure system limits
+  pam_limits:
+    domain: "{{ app_user }}"
+    limit_type: soft
+    limit_item: nofile
+    value: "65535"
+
+- name: Update MOTD
+  template:
+    src: motd.j2
+    dest: /etc/motd
+    mode: '0644'

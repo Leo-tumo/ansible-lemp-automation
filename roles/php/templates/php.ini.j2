@@ -1,0 +1,15 @@
+memory_limit = {{ php_memory_limit }}
+max_execution_time = {{ php_max_execution_time }}
+upload_max_filesize = {{ php_upload_max_filesize }}
+post_max_size = {{ php_upload_max_filesize }}
+max_input_vars = 3000
+date.timezone = UTC
+session.cookie_httponly = On
+session.cookie_secure = On
+session.use_strict_mode = On
+opcache.enable = 1
+opcache.memory_consumption = 128
+opcache.interned_strings_buffer = 8
+opcache.max_accelerated_files = 4000
+opcache.revalidate_freq = 2
+opcache.fast_shutdown = 1

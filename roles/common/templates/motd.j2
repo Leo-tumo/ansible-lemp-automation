@@ -1,0 +1,10 @@
+Welcome to {{ inventory_hostname }}
+
+System Information:
+- OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+- Kernel: {{ ansible_kernel }}
+- Architecture: {{ ansible_architecture }}
+- Memory: {{ ansible_memtotal_mb }}MB
+
+Application: {{ app_name }} ({{ app_env }})
+Last updated: {{ ansible_date_time.iso8601 }}
